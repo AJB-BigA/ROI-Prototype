@@ -7,6 +7,7 @@ from PySide6.QtGui import QPixmap, QImage, QMouseEvent, QPixmap, QPainter, QPen,
 from PySide6.QtCore import QTimer, Qt
 from Toolbar import CutsomToolbar
 from Left_P import LeftPannel
+from Canvas import CanvasLabel
 
 #Sourcery.ai Is this true
 class ROI_Drawing(QtWidgets.QMainWindow):
@@ -17,25 +18,19 @@ class ROI_Drawing(QtWidgets.QMainWindow):
 
         self.last_point = None
 
-        self.label = QtWidgets.QLabel()
-        self.canvas = QPixmap(500, 500)
-
-        # Makes the canvas white, needs to be removed when DICOM images are added
-        self.canvas.fill(QColor("white"))
-
         # Initialize the pen
         self.pen = QPen()
         self.pen.setWidth(6)
         self.pen.setCapStyle(Qt.PenCapStyle.RoundCap)
         self.pen.setColor("blue")
 
-        self.label.setPixmap(self.canvas)
+        self.canvas_labal = CanvasLabel(self.pen)
 
         # Create the left label (panel)
-        self.left_label = LeftPannel(self, self.pen)
+        self.left_label = LeftPannel(self, self.pen, self.canvas_labal)
 
         # Set up the central widget
-        self.setCentralWidget(self.label)
+        self.setCentralWidget(self.canvas_labal)
 
         # Create a layout to hold the left panel and the main canvas
         main_layout = QtWidgets.QHBoxLayout()
@@ -48,45 +43,14 @@ class ROI_Drawing(QtWidgets.QMainWindow):
         main_layout.addWidget(self.left_label)
 
         # Add the canvas (label) to the layout
-        main_layout.addWidget(self.label)
+        main_layout.addWidget(self.canvas_labal)
 
         # Set the central widget to be our layout container
         self.setCentralWidget(central_widget)
 
         # Create and add the toolbar
-        toolbar = CutsomToolbar(self, self.pen)
+        toolbar = CutsomToolbar(self,self.canvas_labal,self.left_label)
         self.addToolBar(toolbar)
-        
-
-
-
-
-
-
-
-    def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        """Tracks the mouse movement"""
-        current_point = event.position().toPoint()
-
-        # Draw on the underlying pixmap
-        painter = QPainter(self.canvas)
-        painter.setPen(self.pen)
-        if self.last_point:
-            painter.drawLine(self.last_point.x(), self.last_point.y(), current_point.x(),current_point.y())
-        else:
-            painter.drawPoint(current_point)
-
-        painter.drawPoint(current_point.x(),current_point.y())
-        painter.end()
-
-        self.label.setPixmap(self.canvas)
-            
-        self.last_point = current_point
-
-    def mouseReleaseEvent(self, event: QMouseEvent):
-        """Sets the last point to none"""
-        self.last_point = None
-        
 
 
 if __name__ == "__main__":
@@ -94,3 +58,4 @@ if __name__ == "__main__":
     widget = ROI_Drawing()
     widget.show()
     sys.exit(app.exec())
+
