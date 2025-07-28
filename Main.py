@@ -8,6 +8,7 @@ from PySide6.QtCore import QTimer, Qt
 from Toolbar import CutsomToolbar
 from Left_P import LeftPannel
 from Canvas import CanvasLabel
+from Units_Box import UnitsBox
 
 #Sourcery.ai Is this true
 class ROI_Drawing(QtWidgets.QMainWindow):
@@ -29,8 +30,17 @@ class ROI_Drawing(QtWidgets.QMainWindow):
         # Create the left label (panel)
         self.left_label = LeftPannel(self, self.pen, self.canvas_labal)
 
+        self.units_box = UnitsBox(self, self.pen, self.canvas_labal)
+
         # Set up the central widget
         self.setCentralWidget(self.canvas_labal)
+
+        # Creates a layout for the tools to fit inside
+        tools_layout = QtWidgets.QVBoxLayout()
+        tools_container = QtWidgets.QWidget()
+        tools_container.setLayout(tools_layout)
+        tools_layout.addWidget(self.left_label)
+        tools_layout.addWidget(self.units_box)
 
         # Create a layout to hold the left panel and the main canvas
         main_layout = QtWidgets.QHBoxLayout()
@@ -40,9 +50,10 @@ class ROI_Drawing(QtWidgets.QMainWindow):
         central_widget.setLayout(main_layout)
 
         # Add the left panel to the layout
-        main_layout.addWidget(self.left_label)
+        main_layout.addWidget(tools_container)
+        
 
-        # Add the canvas (label) to the layout
+        # Add the canvas label to the layout
         main_layout.addWidget(self.canvas_labal)
 
         # Set the central widget to be our layout container

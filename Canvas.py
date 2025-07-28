@@ -16,6 +16,7 @@ class CanvasLabel(QtWidgets.QLabel):
         self.canvas.fill(Qt.white)
         self.setPixmap(self.canvas)
         self.setMouseTracking(True)
+        self.pen.setWidth(12)
 
     def mousePressEvent(self, event: QMouseEvent):
         self.last_point = event.position().toPoint()
@@ -37,3 +38,11 @@ class CanvasLabel(QtWidgets.QLabel):
     def changeCursor(self):
         """Change cursor"""
         self.setCursor(Qt.OpenHandCursor)
+
+    #not the things from halo
+    def flood(self):
+        """Takes three inputs, x,y and colour. 
+        From there it will scan all pixels around it and if any are not the colour specified it will 
+        change its colour then run the algorithm again
+        """
+    
