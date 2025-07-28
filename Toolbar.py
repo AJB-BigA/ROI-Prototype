@@ -19,5 +19,4 @@ class CutsomToolbar(QToolBar):
         on_clicked_ok = dialog.exec()
         if on_clicked_ok:
             self.canvas_label.pen.setColor(dialog.currentColor())
-        self.left_label.last_colour = dialog.currentColor()
-        print(self.left_label.last_colour)
+            self.left_label.last_colour = dialog.currentColor()
