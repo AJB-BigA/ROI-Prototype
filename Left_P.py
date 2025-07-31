@@ -11,7 +11,6 @@ class LeftPannel(QtWidgets.QWidget):
         self.parent = parent
         self.pen = pen
         self.last_colour = self.pen.color()
-        print("Last colour", self.last_colour)
 
         self.set_layout()
 
@@ -59,60 +58,42 @@ class LeftPannel(QtWidgets.QWidget):
 
     def brush_tool(self):
         """This fucntion changes the draw tool to a brush"""
-        width = self.canvas_label.pen.width()
-        self.canvas_label.pen = QPen()
-        self.canvas_label.pen.setWidth(width)
-        self.canvas_label.pen.setColor(self.last_colour)
-        self.canvas_label.pen.setCapStyle(Qt.RoundCap)
-        self.canvas_label.pen.setJoinStyle(Qt.RoundJoin)
         cursor = self.make_circle_cursor(self.canvas_label.pen.width(), self.pen.color())
         self.canvas_label.setCursor(cursor)
-        
-
+        self.canvas_label.circle_tool = False
 
     def pen_tool(self):
         """This fucntion changes the draw tool to a pen"""
-        width = self.canvas_label.pen.width()
-        self.canvas_label.pen = QPen()
-        self.canvas_label.pen.setWidth(width)
-        self.canvas_label.pen.setCapStyle(Qt.PenCapStyle.RoundCap)
-        self.canvas_label.pen.setColor(self.last_colour)
         self.canvas_label.setCursor(Qt.CrossCursor)
-
-        print("Now a pen")
+        self.canvas_label.circle_tool = True
+        
 
     def eraser_roi_tool(self):
         """This fucntion changes the draw tool to the eraser ROI tool"""
         canvas = self.make_circle_cursor(self.canvas_label.pen.width(),QColor(Qt.black))
         self.canvas_label.setCursor(canvas)
         self.last_colour = self.pen.color()
-        print("Colour, ", self.last_colour)
-        self.canvas_label.pen.setColor(Qt.white)
-        print("Now a Eraser ROI")
+        self.canvas_label.pen.setColor(Qt.transparent)
 
+    #TODO
     def eraser_draw_tool(self):
         """This fucntion changes the draw tool to a eraser draw tool"""
-        
-        self.canvas_label.setCursor(Qt.ArrowCursor)
-        print("Now a Eraser Draw")
+        self.canvas_label.canvas.fill(Qt.transparent)
+        self.canvas_label.setPixmap(self.canvas_label.canvas)
     
-
+    #TODO
     def smooth_tool(self):
         """This fucntion changes the draw tool to a smooth tool"""
-        print("Now a SMooth tool")
-    
+    #TODO
     def transect_tool(self):
         """This fucntion changes the draw tool to a smooth tool"""
-        print("Now a transect tool")
-    
+    #TODO
     def copy_button(self):
         """This fucntion changes the draw tool to a smooth tool"""
-        print("Now a copy tool")
-
+    #TODO
     def save_button(self):
         """This fucntion saves the ROI drawing"""
-        print("SAVED!!!!")
-
+    #TODO
     def make_circle_cursor(self, size: int, color: QColor = QColor("black")) ->QCursor:
         """Makes the cursor a cicle"""
     # Create a transparent pixmap
