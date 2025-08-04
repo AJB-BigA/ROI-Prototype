@@ -1,5 +1,5 @@
 
-from PySide6.QtWidgets import QToolBar, QColorDialog
+from PySide6.QtWidgets import QToolBar, QColorDialog, QComboBox
 from PySide6.QtGui import QAction
 
 class CutsomToolbar(QToolBar):
@@ -7,8 +7,10 @@ class CutsomToolbar(QToolBar):
     def __init__(self, parent=None, canvas_label = None, left_label = None):
         super().__init__("Toolbar", parent)
         self.parent = parent
+        
         self.canvas_label = canvas_label
         self.left_label = left_label
+
         colourAction = QAction("Choose Colour",self)
         colourAction.triggered.connect(self.change_colour)
         self.addAction(colourAction)
@@ -22,8 +24,19 @@ class CutsomToolbar(QToolBar):
         redo_button.triggered.connect(self.redo_button)
         self.addAction(redo_button)
 
+        self.combo = QComboBox()
+        self.combo.addItems(["Blue", "Red", "Green", "Yellow"])
+        self.combo.currentTextChanged.connect(self.selection_changed)
 
-        
+        self.addWidget(self.combo)
+
+
+
+    
+    def selection_changed(self, text):
+        print("Selected color:", text)
+
+
     def change_colour(self):
         """Allows us to change the colour of the pen"""
         dialog = QColorDialog()

@@ -9,6 +9,10 @@ from Toolbar import CutsomToolbar
 from Left_P import LeftPannel
 from Canvas import CanvasLabel
 from Units_Box import UnitsBox
+from dicom_scroll_loader import ScrollLoaderUI
+from scroll_loader_4_dicom_image import Scroll_Wheel
+import os
+
 
 #Sourcery.ai Is this true
 class ROI_Drawing(QtWidgets.QMainWindow):
@@ -16,6 +20,9 @@ class ROI_Drawing(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("ROI Prototype")
+
+        # Temporary hard coded directory path
+        directory_in_string = os.path.normpath('/Users/baker/Documents/School/ROI Prototype Git/Test Data/DICOM-RT-05')
 
         self.last_point = None
 
@@ -32,8 +39,22 @@ class ROI_Drawing(QtWidgets.QMainWindow):
 
         self.units_box = UnitsBox(self, self.pen, self.canvas_labal)
 
-        # Set up the central widget
-        self.setCentralWidget(self.canvas_labal)
+        self.dicom_data = ScrollLoaderUI(directory_in_string)
+
+        self.scroll_wheel = Scroll_Wheel(self.dicom_data)
+
+        #Drawing Widget 
+        drawing_widget = QtWidgets.QWidget()
+        drawing_widget.setFixedSize(500,500)
+
+        self.dicom_data.setParent(drawing_widget)
+        self.dicom_data.setGeometry(0,0,500,500)
+        
+        self.canvas_labal.setParent(drawing_widget)
+        self.canvas_labal.setGeometry(0,0,500,500)
+        self.canvas_labal.raise_()
+
+
 
         # Creates a layout for the tools to fit inside
         tools_layout = QtWidgets.QVBoxLayout()
@@ -49,12 +70,14 @@ class ROI_Drawing(QtWidgets.QMainWindow):
         central_widget = QtWidgets.QWidget()
         central_widget.setLayout(main_layout)
 
+
         # Add the left panel to the layout
         main_layout.addWidget(tools_container)
-        
 
+        main_layout.addWidget(self.scroll_wheel)
+        
         # Add the canvas label to the layout
-        main_layout.addWidget(self.canvas_labal)
+        main_layout.addWidget(drawing_widget)
 
         # Set the central widget to be our layout container
         self.setCentralWidget(central_widget)

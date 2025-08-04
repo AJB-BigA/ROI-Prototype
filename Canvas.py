@@ -7,7 +7,6 @@ from PySide6.QtGui import QPixmap, QImage, QMouseEvent, QPixmap, QPainter, QPen,
 from PySide6.QtCore import QTimer, Qt
 from collections import deque
 
-      
 class CanvasLabel(QtWidgets.QLabel):
     def __init__(self, pen: QPen):
         super().__init__()
@@ -128,6 +127,7 @@ class CanvasLabel(QtWidgets.QLabel):
         queue.append((x,y))
         visited.add((x,y))
         image = self.canvas.toImage()
+        target_color = image.pixelColor(x, y)
 
         while queue:
             x,y = queue.popleft()
@@ -136,7 +136,7 @@ class CanvasLabel(QtWidgets.QLabel):
                 nx, ny = dx + x, dy + y
                 if 0 <= nx < image.width() and 0 <= ny < image.height():
                     colour = image.pixelColor(nx,ny)
-                    if colour != colour_contrast and (nx,ny) not in visited:
+                    if colour == target_color and (nx,ny) not in visited:
                         queue.append((nx,ny))
                         visited.add((nx,ny))
         fill.end()

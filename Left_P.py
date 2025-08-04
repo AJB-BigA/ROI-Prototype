@@ -58,7 +58,7 @@ class LeftPannel(QtWidgets.QWidget):
 
     def brush_tool(self):
         """This fucntion changes the draw tool to a brush"""
-        cursor = self.make_circle_cursor(self.canvas_label.pen.width(), self.pen.color())
+        cursor = self.make_circle_cursor(self.canvas_label.pen.width(), self.canvas_label.pen.color())
         self.canvas_label.setCursor(cursor)
         self.canvas_label.circle_tool = False
 
@@ -93,7 +93,8 @@ class LeftPannel(QtWidgets.QWidget):
     #TODO
     def save_button(self):
         """This fucntion saves the ROI drawing"""
-    #TODO
+        self.canvas_label.canvas.save("/Users/baker/Documents/School/ROI Prototype Git/ROI-Prototype/Drawings/drawing.png", "PNG")
+    #TODO 
     def make_circle_cursor(self, size: int, color: QColor = QColor("black")) ->QCursor:
         """Makes the cursor a cicle"""
     # Create a transparent pixmap
