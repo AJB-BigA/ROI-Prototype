@@ -16,6 +16,7 @@ class ScrollLoaderUI(QWidget):
         super().__init__()
 
         self.qimage_array = self.extract_qimage_data(directory_in_str)
+        self.ds_data = self.extract_ds_data(directory_in_str)
 
         layout = QHBoxLayout()
 
@@ -61,3 +62,28 @@ class ScrollLoaderUI(QWidget):
         files_with_instance.sort(key = lambda x: x[0])
         qimage_array = [img for _, img in files_with_instance]
         return qimage_array
+    
+    def extract_ds_data(self,directory_path) -> list:
+        """Method will extract all valid dicom data"""
+        directory = os.fsencode(directory_path)
+        arr = []
+        files_with_instance = []
+
+        for file in sorted(os.listdir(directory)):
+            filename = os.fsdecode(file)
+            if filename.endswith(".dcm"):
+                try:
+                    ds = read_dicom_file(
+                        (os.path.join(os.fsdecode(directory), filename)))
+                    instance = getattr(ds, "InstanceNumber", None)
+                    if files_with_instance is not None:
+                        files_with_instance.append((int(instance),ds))
+                    continue
+                except Exception as e:
+                    print(e)
+                    continue
+            else:
+                continue
+        files_with_instance.sort(key = lambda x: x[0])
+        arr = [img for _, img in files_with_instance]
+        return arr

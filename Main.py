@@ -34,8 +34,7 @@ class ROI_Drawing(QtWidgets.QMainWindow):
 
         self.canvas_labal = CanvasLabel(self.pen)
 
-        # Create the left label (panel)
-        self.left_label = LeftPannel(self, self.pen, self.canvas_labal)
+        # Initalises the calsses
 
         self.units_box = UnitsBox(self, self.pen, self.canvas_labal)
 
@@ -43,15 +42,21 @@ class ROI_Drawing(QtWidgets.QMainWindow):
 
         self.scroll_wheel = Scroll_Wheel(self.dicom_data)
 
+        self.left_label = LeftPannel(self, self.pen, self.canvas_labal,self.scroll_wheel)
+
+        toolbar = CutsomToolbar(self,self.canvas_labal,self.left_label, self.scroll_wheel, self.dicom_data)
+
+       
+
         #Drawing Widget 
         drawing_widget = QtWidgets.QWidget()
-        drawing_widget.setFixedSize(500,500)
+        drawing_widget.setFixedSize(512,512)
 
         self.dicom_data.setParent(drawing_widget)
-        self.dicom_data.setGeometry(0,0,500,500)
+        self.dicom_data.setGeometry(0,0,512,512)
         
         self.canvas_labal.setParent(drawing_widget)
-        self.canvas_labal.setGeometry(0,0,500,500)
+        self.canvas_labal.setGeometry(0,0,512,512)
         self.canvas_labal.raise_()
 
 
@@ -82,8 +87,7 @@ class ROI_Drawing(QtWidgets.QMainWindow):
         # Set the central widget to be our layout container
         self.setCentralWidget(central_widget)
 
-        # Create and add the toolbar
-        toolbar = CutsomToolbar(self,self.canvas_labal,self.left_label)
+        # Add the toolbar
         self.addToolBar(toolbar)
 
 

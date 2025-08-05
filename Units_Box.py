@@ -4,7 +4,7 @@ from PySide6.QtGui import QPixmap, QImage, QMouseEvent, QPixmap, QPainter, QPen,
 from PySide6.QtCore import Qt
 
 class UnitsBox(QtWidgets.QLabel):
-    def __init__(self, parent = None, pen = None, canvas_label = None):
+    def __init__(self, parent = None, pen = None, canvas_label = None,):
         super().__init__(parent)
         self.canvas_label = canvas_label
         self.parent = parent
@@ -34,12 +34,14 @@ class UnitsBox(QtWidgets.QLabel):
         self.pixel_range_min = QSpinBox()
         self.pixel_range_min.setRange(-1000,6000)
         self.pixel_range_min.valueChanged.connect(self.update_pixel_min)
+        self.pixel_range_min.setValue(-1000)
 
         #Upper bounds of the pixel range
         pixel_max_range = QLabel("Pixel Range Max :")
         self.pixel_range_max = QSpinBox()
         self.pixel_range_max.setRange(-1000,6000)
         self.pixel_range_max.valueChanged.connect(self.update_pixel_max)
+        self.pixel_range_max.setValue(6000)
 
         #Transparency Widget
         transparency = QLabel("Transparency :")
@@ -80,8 +82,10 @@ class UnitsBox(QtWidgets.QLabel):
 
     def update_pixel_min(self, value):
         """Updates the lower bounds of the pixel range for ROI"""
-        #will implement later once the DICOM file viewer has been added
+        self.canvas_label.min_range = value
+        self.canvas_label.lock_pixel()
 
     def update_pixel_max(self, value):
         """Updates the upper bounds of the pixel range for ROI"""
-        #will update later once the dicome file viewer has been added
+        self.canvas_label.max_range = value
+        self.canvas_label.lock_pixel()
