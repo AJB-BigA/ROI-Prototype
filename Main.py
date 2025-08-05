@@ -8,6 +8,11 @@ from PySide6.QtCore import QTimer, Qt
 from Toolbar import CutsomToolbar
 from Left_P import LeftPannel
 from Canvas import CanvasLabel
+from Units_Box import UnitsBox
+from dicom_scroll_loader import ScrollLoaderUI
+from scroll_loader_4_dicom_image import Scroll_Wheel
+import os
+
 
 #Sourcery.ai Is this true
 class ROI_Drawing(QtWidgets.QMainWindow):
@@ -15,6 +20,9 @@ class ROI_Drawing(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("ROI Prototype")
+
+        # Temporary hard coded directory path
+        directory_in_string = self.choose_file()
 
         self.last_point = None
 
@@ -26,11 +34,37 @@ class ROI_Drawing(QtWidgets.QMainWindow):
 
         self.canvas_labal = CanvasLabel(self.pen)
 
-        # Create the left label (panel)
-        self.left_label = LeftPannel(self, self.pen, self.canvas_labal)
+        # Initalises the calsses
 
-        # Set up the central widget
-        self.setCentralWidget(self.canvas_labal)
+        self.units_box = UnitsBox(self, self.pen, self.canvas_labal)
+
+        self.dicom_data = ScrollLoaderUI(directory_in_string)
+
+        self.scroll_wheel = Scroll_Wheel(self.dicom_data)
+
+        self.left_label = LeftPannel(self, self.pen, self.canvas_labal,self.scroll_wheel)
+
+        toolbar = CutsomToolbar(self,self.canvas_labal,self.left_label, self.scroll_wheel, self.dicom_data)
+
+       
+
+        #Drawing Widget 
+        drawing_widget = QtWidgets.QWidget()
+        drawing_widget.setFixedSize(512,512)
+
+        self.dicom_data.setParent(drawing_widget)
+        self.dicom_data.setGeometry(0,0,512,512)
+        
+        self.canvas_labal.setParent(drawing_widget)
+        self.canvas_labal.setGeometry(0,0,512,512)
+        self.canvas_labal.raise_()
+
+        # Creates a layout for the tools to fit inside
+        tools_layout = QtWidgets.QVBoxLayout()
+        tools_container = QtWidgets.QWidget()
+        tools_container.setLayout(tools_layout)
+        tools_layout.addWidget(self.left_label)
+        tools_layout.addWidget(self.units_box)
 
         # Create a layout to hold the left panel and the main canvas
         main_layout = QtWidgets.QHBoxLayout()
@@ -39,19 +73,24 @@ class ROI_Drawing(QtWidgets.QMainWindow):
         central_widget = QtWidgets.QWidget()
         central_widget.setLayout(main_layout)
 
-        # Add the left panel to the layout
-        main_layout.addWidget(self.left_label)
 
-        # Add the canvas (label) to the layout
-        main_layout.addWidget(self.canvas_labal)
+        # Add the left panel to the layout
+        main_layout.addWidget(tools_container)
+
+        main_layout.addWidget(self.scroll_wheel)
+        
+        # Add the canvas label to the layout
+        main_layout.addWidget(drawing_widget)
 
         # Set the central widget to be our layout container
         self.setCentralWidget(central_widget)
 
-        # Create and add the toolbar
-        toolbar = CutsomToolbar(self,self.canvas_labal,self.left_label)
+        # Add the toolbar
         self.addToolBar(toolbar)
 
+    def choose_file(self) -> str: 
+        file_path = QtWidgets.QFileDialog.getExistingDirectory(self,"Select a file","",QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontResolveSymlinks)
+        return file_path
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
