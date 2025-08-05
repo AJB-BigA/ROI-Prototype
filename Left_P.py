@@ -68,16 +68,19 @@ class LeftPannel(QtWidgets.QWidget):
         cursor = self.make_circle_cursor(self.canvas_label.pen.width(), self.canvas_label.pen.color())
         self.canvas_label.setCursor(cursor)
         self.canvas_label.circle_tool = False
+        self.canvas_label.transect_tool = False
 
     def pen_tool(self):
         """This fucntion changes the draw tool to a pen"""
         self.canvas_label.fill_tool = False
         self.canvas_label.setCursor(Qt.CrossCursor)
         self.canvas_label.circle_tool = True
+        self.canvas_label.transect_tool = False
 
     def eraser_roi_tool(self):
         """This fucntion changes the draw tool to the eraser ROI tool"""
         self.canvas_label.fill_tool = False
+        self.canvas_label.transect_tool = False
         canvas = self.make_circle_cursor(self.canvas_label.pen.width(),QColor(Qt.black))
         self.canvas_label.setCursor(canvas)
         self.last_colour = self.pen.color()

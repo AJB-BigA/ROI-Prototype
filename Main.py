@@ -22,7 +22,7 @@ class ROI_Drawing(QtWidgets.QMainWindow):
         self.setWindowTitle("ROI Prototype")
 
         # Temporary hard coded directory path
-        directory_in_string = os.path.normpath('/Users/baker/Documents/School/ROI Prototype Git/Test Data/DICOM-RT-05')
+        directory_in_string = self.choose_file()
 
         self.last_point = None
 
@@ -59,8 +59,6 @@ class ROI_Drawing(QtWidgets.QMainWindow):
         self.canvas_labal.setGeometry(0,0,512,512)
         self.canvas_labal.raise_()
 
-
-
         # Creates a layout for the tools to fit inside
         tools_layout = QtWidgets.QVBoxLayout()
         tools_container = QtWidgets.QWidget()
@@ -90,6 +88,9 @@ class ROI_Drawing(QtWidgets.QMainWindow):
         # Add the toolbar
         self.addToolBar(toolbar)
 
+    def choose_file(self) -> str: 
+        file_path = QtWidgets.QFileDialog.getExistingDirectory(self,"Select a file","",QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontResolveSymlinks)
+        return file_path
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
