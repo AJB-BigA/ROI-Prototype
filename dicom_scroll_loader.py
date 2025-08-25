@@ -1,17 +1,16 @@
 """Loads DICOM image set to UI and allows user to scroll through images using mouse wheel or a slider bar"""
 
 import os
-import sys
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QSpinBox,QSlider,QHBoxLayout
 from PySide6.QtGui import QPixmap
-import os
+from PySide6.QtCore import Signal
 from read_dicom_file import read_dicom_file
 from inputs_and_outputs import get_qimage_from_dicom_file
 
 
 class ScrollLoaderUI(QWidget):
     """UI element that will display a dicom image and allow the user to scroll to another image"""
-
+    f_value = Signal(bool)
     def __init__(self, directory_in_str):
         super().__init__()
 
@@ -24,8 +23,6 @@ class ScrollLoaderUI(QWidget):
         self.pixmap = QPixmap.fromImage(self.qimage_array[0])
         self.image_label = QLabel()
         self.image_label.setPixmap(self.pixmap)
-        self.image_label.setScaledContents(True)
-
         layout.addWidget(self.image_label)
         self.setLayout(layout)
 
@@ -34,7 +31,7 @@ class ScrollLoaderUI(QWidget):
         if value < len(self.qimage_array):
             self.pixmap = QPixmap.fromImage(self.qimage_array[value])
             self.image_label.setPixmap(self.pixmap)
-
+            self.f_value.emit(False)
    
     def extract_qimage_data(self,directory_path) -> list:
         """Method will extract all valid dicom image data, convert it to 
