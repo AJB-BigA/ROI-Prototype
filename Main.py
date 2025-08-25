@@ -1,17 +1,14 @@
 import sys
-import pydicom
-import logging
 from PySide6 import QtWidgets
 from PySide6 import QtCore
-from PySide6.QtGui import QPixmap, QImage, QMouseEvent, QPixmap, QPainter, QPen, QColor, QAction, QBrush
-from PySide6.QtCore import QTimer, Qt
+from PySide6.QtGui import QPen, QKeyEvent
+from PySide6.QtCore import Qt
 from Toolbar import CutsomToolbar
 from Left_P import LeftPannel
 from Canvas import CanvasLabel
 from Units_Box import UnitsBox
 from dicom_scroll_loader import ScrollLoaderUI
 from scroll_loader_4_dicom_image import Scroll_Wheel
-import os
 
 
 #Sourcery.ai Is this true
@@ -32,21 +29,21 @@ class ROI_Drawing(QtWidgets.QMainWindow):
         self.pen.setCapStyle(Qt.PenCapStyle.RoundCap)
         self.pen.setColor("blue")
 
-        self.canvas_labal = CanvasLabel(self.pen)
-
         # Initalises the calsses
-
-        self.units_box = UnitsBox(self, self.pen, self.canvas_labal)
+        
 
         self.dicom_data = ScrollLoaderUI(directory_in_string)
-
         self.scroll_wheel = Scroll_Wheel(self.dicom_data)
-
+        self.canvas_labal = CanvasLabel(self.pen, self.dicom_data,self.scroll_wheel)
+        self.units_box = UnitsBox(self, self.pen, self.canvas_labal)
         self.left_label = LeftPannel(self, self.pen, self.canvas_labal,self.scroll_wheel)
-
         toolbar = CutsomToolbar(self,self.canvas_labal,self.left_label, self.scroll_wheel, self.dicom_data)
+        
+       #Connecting slots & signals
+        self.dicom_data.f_value.connect(self.canvas_labal.change_layout_bool)
+        self.scroll_wheel.slider_value.connect(self.canvas_labal.update_pixmap_layer)
 
-       
+
 
         #Drawing Widget 
         drawing_widget = QtWidgets.QWidget()
@@ -58,6 +55,14 @@ class ROI_Drawing(QtWidgets.QMainWindow):
         self.canvas_labal.setParent(drawing_widget)
         self.canvas_labal.setGeometry(0,0,512,512)
         self.canvas_labal.raise_()
+
+        img_label = self.dicom_data.image_label
+        img_label.setScaledContents(False)
+        img_label.setAlignment(Qt.AlignCenter)
+
+        if self.dicom_data.layout():
+            self.dicom_data.layout().setContentsMargins(0, 0, 0, 0)
+            self.dicom_data.layout().setSpacing(0)
 
         # Creates a layout for the tools to fit inside
         tools_layout = QtWidgets.QVBoxLayout()
@@ -72,7 +77,6 @@ class ROI_Drawing(QtWidgets.QMainWindow):
         # Create a QWidget to hold both the left panel and the central label
         central_widget = QtWidgets.QWidget()
         central_widget.setLayout(main_layout)
-
 
         # Add the left panel to the layout
         main_layout.addWidget(tools_container)
@@ -91,6 +95,15 @@ class ROI_Drawing(QtWidgets.QMainWindow):
     def choose_file(self) -> str: 
         file_path = QtWidgets.QFileDialog.getExistingDirectory(self,"Select a file","",QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontResolveSymlinks)
         return file_path
+    
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        if event.key() == Qt.Key_Up:
+            self.scroll_wheel.setValue(self.scroll_wheel.value() +1)
+            self.canvas_labal.ds_is_active = False
+        if event.key() == Qt.Key_Down:
+            self.scroll_wheel.setValue(self.scroll_wheel.value() -1)
+            self.canvas_labal.ds_is_active = False
+        return super().keyPressEvent(event)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
