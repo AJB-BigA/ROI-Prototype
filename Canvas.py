@@ -311,6 +311,8 @@ class CanvasLabel(QtWidgets.QLabel):
         """
         # Guard: need a HU array to have a meaningful lock
         if not isinstance(self.pixel_array, np.ndarray):
+            import logging
+            logging.warning("Enforcement of pixel lock skipped: pixel_array is not a numpy ndarray.")
             return
 
         draw_mask = self._draw_mask_bool()
