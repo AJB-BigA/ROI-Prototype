@@ -1,5 +1,4 @@
 """Loads DICOM image set to UI and allows user to scroll through images using mouse wheel or a slider bar"""
-
 import os
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QSpinBox,QSlider,QHBoxLayout
 from PySide6.QtGui import QPixmap
@@ -10,6 +9,8 @@ from inputs_and_outputs import get_qimage_from_dicom_file
 
 class ScrollLoaderUI(QWidget):
     """UI element that will display a dicom image and allow the user to scroll to another image"""
+    #signal connects the updated change with the canvas
+    #This signal changes the bool value that prevents the pixel lock scan from taking place every click
     f_value = Signal(bool)
     def __init__(self, directory_in_str):
         super().__init__()

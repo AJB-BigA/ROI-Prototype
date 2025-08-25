@@ -25,11 +25,17 @@ class CanvasLabel(QtWidgets.QLabel):
         self.dicom_data = ds
         self.scrol_loader = scroll_loader
         self.ds_is_active = False
+        self.canvas_num = 0
         
         # sets the canvas and the mouse tracking
-        self.canvas = QPixmap(512, 512)
-        self.canvas.fill(Qt.transparent)
-        self.setPixmap(self.canvas)
+        self.gen_pix_map = QPixmap(512, 512)
+        self.gen_pix_map.fill(Qt.transparent)
+        self.canvas = []
+        print(len(self.dicom_data.qimage_array))
+        for _ in range(len(self.dicom_data.qimage_array)):
+            self.canvas.append(self.gen_pix_map.copy())
+            print("Och")
+        self.setPixmap(self.canvas[self.canvas_num])
         self.setMouseTracking(True)
 
         # default pen width
@@ -83,22 +89,22 @@ class CanvasLabel(QtWidgets.QLabel):
         if self.current_tool is Tool.FILL:
             self.pixel_fill((self.first_point.x(), self.first_point.y()))
             self._enforce_lock_after_stroke()         # NEW: enforce after fill
-            self.draw_history.append(self.canvas.copy())  # CHANGED: record after enforcement
+            self.draw_history.append(self.canvas[self.canvas_num].copy())  # CHANGED: record after enforcement
             self.redo_history.clear()
-            self.setPixmap(self.canvas)
+            self.setPixmap(self.canvas[self.canvas_num])
 
     def mouseMoveEvent(self, event: QMouseEvent):
         if event.buttons() and (self.current_tool is Tool.DRAW or self.current_tool is Tool.CIRCLE):
             current_point = event.position().toPoint()
             self.mid_point.append(current_point)
-            painter = QPainter(self.canvas)
+            painter = QPainter(self.canvas[self.canvas_num])
             painter.setCompositionMode(QPainter.CompositionMode_Source)
             painter.setPen(self.pen)
             if self.last_point:
                 painter.drawLine(self.last_point, current_point)
             painter.end()
 
-            self.setPixmap(self.canvas)
+            self.setPixmap(self.canvas[self.canvas_num])
             self.last_point = current_point
             self.did_draw = True
 
@@ -119,7 +125,7 @@ class CanvasLabel(QtWidgets.QLabel):
             self._enforce_lock_after_stroke()             # NEW
 
             # Save history AFTER enforcement so undo/redo has the corrected image
-            self.draw_history.append(self.canvas.copy())  # CHANGED
+            self.draw_history.append(self.canvas[self.canvas_num].copy())  # CHANGED
             self.redo_history.clear()
 
         self.mid_point.clear()
@@ -135,13 +141,13 @@ class CanvasLabel(QtWidgets.QLabel):
 
     def transect_method(self):
         """Draws the transect line and runs the transect protcall"""
-        painter = QPainter(self.canvas)
+        painter = QPainter(self.canvas[self.canvas_num])
         painter.setCompositionMode(QPainter.CompositionMode_Source)
         painter.setPen(self.t_pen)
         painter.drawLine(self.transect_array[0], self.transect_array[1])
         painter.end()
-        self.setPixmap(self.canvas)
-        self.draw_history.append(self.canvas.copy())
+        self.setPixmap(self.canvas[self.canvas_num])
+        self.draw_history.append(self.canvas[self.canvas_num].copy())
         self.transect_window()
         self.line_points = 0
         self.transect_array.clear()
@@ -172,15 +178,15 @@ class CanvasLabel(QtWidgets.QLabel):
     def pen_fill_tool(self, event):
         """connects the last two points and fills the insides"""
         current_point = event.position().toPoint()
-        painter = QPainter(self.canvas)
+        painter = QPainter(self.canvas[self.canvas_num])
         painter.setCompositionMode(QPainter.CompositionMode_Source)
         painter.setPen(self.pen)
         painter.drawLine(self.first_point, current_point)
         painter.end()
-        self.setPixmap(self.canvas)
+        self.setPixmap(self.canvas[self.canvas_num])
         ave = self.caculate_average_pixle()
         self.flood(ave)
-        self.setPixmap(self.canvas)
+        self.setPixmap(self.canvas[self.canvas_num])
         # (history is now handled in mouseReleaseEvent after enforcement)
 
     def caculate_average_pixle(self):
@@ -200,21 +206,22 @@ class CanvasLabel(QtWidgets.QLabel):
     # not the things from halo
     def flood(self, mid_p):
         """Simple BFS flood fill on current canvas"""
-        direction = [(0,-1), (1,-1), (-1,0), (1,0), (-1,1), (0,1), (1,1)]
-        queue = deque([])
-        visited = set()
-        fill = QPainter(self.canvas)
+
+        #Painter and drawing details
+        fill = QPainter(self.canvas[self.canvas_num])
         fill.setCompositionMode(QPainter.CompositionMode_Source)
         colour_contrast = self.pen.color()
         colour_contrast.setAlpha(self.max_alpha)
         fill.setBrush(QColor(colour_contrast))
         fill.setPen(Qt.NoPen)
-
+        image = self.canvas[self.canvas_num].toImage()
+        
+        #Cordinate Details
         x, y = mid_p
-        queue.append((x, y))
-        visited.add((x, y))
-        image = self.canvas.toImage()
+        queue = deque([x, y])
+        visited = set(x, y)
         target_color = image.pixelColor(x, y)
+        direction = [(0,-1), (1,-1), (-1,0), (1,0), (-1,1), (0,1), (1,1)]
 
         while queue:
             x, y = queue.popleft()
@@ -231,17 +238,17 @@ class CanvasLabel(QtWidgets.QLabel):
     def undo_draw(self):
         """Reloads the last saved pixmap"""
         if len(self.draw_history) > 1:
-            self.redo_history.append(self.canvas.copy())
+            self.redo_history.append(self.canvas[self.canvas_num].copy())
             self.draw_history.pop()
-            self.canvas = self.draw_history[-1].copy()
-            self.setPixmap(self.canvas)
+            self.canvas[self.canvas_num] = self.draw_history[-1].copy()
+            self.setPixmap(self.canvas[self.canvas_num])
 
     def redo_draw(self):
         """Opposite of undo"""
         if self.redo_history:
             self.draw_history.append(self.redo_history[-1].copy())
-            self.canvas = self.redo_history.pop()
-            self.setPixmap(self.canvas)
+            self.canvas[self.canvas_num] = self.redo_history.pop()
+            self.setPixmap(self.canvas[self.canvas_num])
 
     def set_pixel_layer(self, ds):
         """Locks the pixels out of range based on max and min values"""
@@ -258,7 +265,7 @@ class CanvasLabel(QtWidgets.QLabel):
         """Fill tool that respects pixel_lock at expansion time"""
         x, y = mid_p 
         direction = [(0,-1), (1,-1), (-1,0), (1,0), (-1,1), (0,1), (1,1)]
-        fill = QPainter(self.canvas)
+        fill = QPainter(self.canvas[self.canvas_num])
         fill.setCompositionMode(QPainter.CompositionMode_Source)
         colour_contrast = self.pen.color()
         colour_contrast.setAlpha(self.max_alpha)
@@ -281,7 +288,7 @@ class CanvasLabel(QtWidgets.QLabel):
 
     def _draw_mask_bool(self) -> np.ndarray:
         """Alpha>0 where anything has been drawn on the canvas."""
-        img = self.canvas.toImage().convertToFormat(QImage.Format_ARGB32)
+        img = self.canvas[self.canvas_num].toImage().convertToFormat(QImage.Format_ARGB32)
         h, w = img.height(), img.width()
 
         # memoryview (read-only is fine for reading)
@@ -303,7 +310,7 @@ class CanvasLabel(QtWidgets.QLabel):
         if isinstance(self.pixel_lock, np.ndarray):
             return ~self.pixel_lock
         # If lock isn't ready yet, allow everywhere
-        return np.ones((self.canvas.height(), self.canvas.width()), dtype=bool)
+        return np.ones((self.canvas[self.canvas_num].height(), self.canvas[self.canvas_num].width()), dtype=bool)
 
     def _enforce_lock_after_stroke(self):
         """
@@ -338,26 +345,36 @@ class CanvasLabel(QtWidgets.QLabel):
         marr[:, :w] = np.where(allow_mask, 255, 0).astype(np.uint8)
 
         # Apply as alpha mask
-        p = QPainter(self.canvas)
+        p = QPainter(self.canvas[self.canvas_num])
         p.setCompositionMode(QPainter.CompositionMode_DestinationIn)
         p.drawImage(0, 0, mask_img)
         p.end()
-        self.setPixmap(self.canvas)
+        self.setPixmap(self.canvas[self.canvas_num])
 
 
         # DestinationIn keeps destination pixels only where mask alpha > 0
-        p = QPainter(self.canvas)
         p.setCompositionMode(QPainter.CompositionMode_DestinationIn)
         p.drawImage(0, 0, mask_img)
         p.end()
 
-        self.setPixmap(self.canvas)
+        self.setPixmap(self.canvas[self.canvas_num])
         print(f"[lock] Erased {int(outside.sum())} px outside HU range.")
 
 
 #end of AI Gen
+
+#This section contain all of the slots that communicate with methods in other files
     @Slot(bool)
     def change_layout_bool(self, v:bool):
         """Changes the values of ds_is_active to remind the drawer to reset the pixmap
           once the scroll loader changes value"""
         self.ds_is_active = v
+
+    @Slot(int)
+    def update_pixmap_layer(self, v:int):
+        """When the slider changes value the pixmap gets updated"""
+        self.setPixmap(self.canvas[v])
+        self.canvas_num = v
+        print("Canvas Num ", {v})
+        print("pm id", id(self.canvas[v]))
+        self.update()
